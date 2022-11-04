@@ -18,5 +18,22 @@
     <ClCompile Include="src\ApplicationMain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\D3DApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\D3DUtil.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\d3dx12.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\D3DApp.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\D3DUtil.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
