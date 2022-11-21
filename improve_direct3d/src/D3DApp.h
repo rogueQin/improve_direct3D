@@ -15,11 +15,15 @@ protected:
 	virtual void Update();
 	virtual void Draw();
 
+
+	virtual void OnResize(WPARAM wParam, LPARAM lParam, void*reserved = nullptr);
+	virtual void ResetViewPort();
+	virtual void OnMouseMove(WPARAM wParam, LPARAM lParam, void*reserved = nullptr);
+
+
 protected:
 	bool InitAppWindow();
 	bool InitDirect3D();
-	void OnResize(WPARAM wParam, LPARAM lParam, void*reserved = nullptr);
-	void ResetViewPort();
 
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
@@ -75,7 +79,6 @@ protected:
 
 	int mAppScreenWidth;
 	int mAppScreenHeight;
-
 public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };

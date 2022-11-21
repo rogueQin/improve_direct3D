@@ -38,6 +38,7 @@ public:
 protected:
 	virtual void Update() override;
 	virtual void Draw() override;
+	virtual void ResetViewPort() override;
 
 private:
 	void BuildDescriptorHeaps();
@@ -66,6 +67,8 @@ private:
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
 
+	float mTheta = 1.7f * DirectX::XM_PI;
+	float mPhi = DirectX::XM_PIDIV4;
 
 };
 

@@ -88,10 +88,11 @@ LRESULT CALLBACK D3DApp::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 	case WM_KEYDOWN:
 		if (wParam == VK_ESCAPE)
 			DestroyWindow(self->mAppWnd);
-		else if (wParam == VK_LEFT)
-		{
-			//self->Draw();
-		}
+		return 0;
+	case WM_MOUSEMOVE:
+	{
+		self->OnMouseMove(wParam, lParam, nullptr);
+	}
 		return 0;
 	case WM_SIZE:
 	{
@@ -341,10 +342,15 @@ void D3DApp::CreateRtvAndDsvDescriptionHeaps()
 void D3DApp::OnResize(WPARAM wParam, LPARAM lParam, void* reserved)
 {
 	mAppScreenWidth = LOWORD(lParam) > 0 ? LOWORD(lParam) : mAppScreenWidth;
-	mAppScreenHeight = HIWORD(lParam) > 0 ? LOWORD(lParam) : mAppScreenHeight;
+	mAppScreenHeight = HIWORD(lParam) > 0 ? HIWORD(lParam) : mAppScreenHeight;
 
 	if (md3dDevice)
 		ResetViewPort();
+}
+
+void D3DApp::OnMouseMove(WPARAM wParam, LPARAM lParam, void*reserved)
+{
+
 }
 
 void D3DApp::ResetViewPort()
