@@ -1,12 +1,20 @@
 
-
 #include <windows.h>
-#include "D3DApp.h"
+#include "BoxApp.h"
 
+#include <wincon.h>
+#pragma warning(disable:4996)
+
+void InitConsoleWindow() 
+{
+	AllocConsole();
+	freopen("CONOUT$", "w+t", stdout);
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, int nCmdShow) 
 {
-	D3DApp theApp = D3DApp(hInstance, nCmdShow);
+	InitConsoleWindow();
+	BoxApp theApp(hInstance, nCmdShow);
 
 	if (!theApp.Initlize())
 		return 0;

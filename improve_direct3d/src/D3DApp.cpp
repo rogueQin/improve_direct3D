@@ -1,12 +1,5 @@
 #include "D3DApp.h"
-
-D3DApp::D3DApp()
-{
-	mWndClassName = L"";
-	mWndWindowName = L"";
-	mAppScreenWidth = 800;
-	mAppScreenHeight = 600;
-}
+#include "MathHelper.h"
 
 D3DApp::D3DApp(HINSTANCE hInstance, int show) : mAppInstance(hInstance), mShow(show)
 {
@@ -27,9 +20,6 @@ bool D3DApp::Initlize()
 	if (!InitDirect3D())
 		return false;
 	ResetViewPort();
-	
-	BuildScene();
-
 	return true;
 }
 
@@ -98,6 +88,10 @@ LRESULT CALLBACK D3DApp::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 	case WM_KEYDOWN:
 		if (wParam == VK_ESCAPE)
 			DestroyWindow(self->mAppWnd);
+		else if (wParam == VK_LEFT)
+		{
+			//self->Draw();
+		}
 		return 0;
 	case WM_SIZE:
 	{
@@ -148,6 +142,7 @@ void D3DApp::Draw()
 	mCommandList->RSSetViewports(1, &mViewPort);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 
+	//mCommandList->ClearRenderTargetView(CurrentBackBufferView(), mCurrBackBuffer % 2 == 0 ? DirectX::Colors::LightSteelBlue : DirectX::Colors::LightGreen, 0, nullptr);
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
@@ -169,22 +164,12 @@ void D3DApp::Draw()
 	FlushCommandQueue();
 }
 
-void D3DApp::BuildScene() 
-{
-	D3D12_INPUT_LAYOUT_DESC input_layout_desc;
-	D3D12_INPUT_ELEMENT_DESC input_element_desc;
-
-	CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(12*sizeof(VertexColorData));
-
-	
-}
-
 bool D3DApp::InitDirect3D() 
 {
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgifactory)));
 	LogAdapters();
 	HRESULT hardWareResult = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&md3dDevice));
-	ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
+	ThrowIfFailed(md3dDevice->CreateFence(mCurrentFence, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
 	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	mCbvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -448,13 +433,19 @@ void D3DApp::FlushCommandQueue()
 {
 	mCurrentFence++;
 	ThrowIfFailed(mCommandQuene->Signal(mFence.Get(), mCurrentFence));
-	if (mFence->GetCompletedValue() < mCurrentFence)
+	//std::cout << "FlushCommandQueue:" << mCurrentFence << std::endl;
+	UINT64 gpuFenceValue = mFence->GetCompletedValue();
+	//std::cout << "gpuFenceValue:" << gpuFenceValue << std::endl;
+	if (gpuFenceValue < mCurrentFence)
 	{
+		//std::cout << "obstruct start! gpuFenceValue:" << gpuFenceValue << std::endl;
 		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
 		ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
 
 		WaitForSingleObject(eventHandle, INFINITE);
 		CloseHandle(eventHandle);
+		gpuFenceValue = mFence->GetCompletedValue();
+		//std::cout << "obstruct end! gpuFenceValue:" << gpuFenceValue << std::endl;
 	}
 }
 

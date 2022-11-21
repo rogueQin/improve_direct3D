@@ -3,30 +3,19 @@
 
 #include "D3DUtil.h"
 
-struct VertexColorData
-{
-	DirectX::XMFLOAT3 Pos;
-	DirectX::XMFLOAT3 Normal;
-	DirectX::XMFLOAT4 Color;
-};
-
-struct VertexTextureData
-{
-	DirectX::XMFLOAT3 Pos;
-	DirectX::XMFLOAT3 Normal;
-	DirectX::XMFLOAT2 TextureUV;
-};
-
 class D3DApp
 {
 public:
-	D3DApp();
 	D3DApp(HINSTANCE hInstance, int show);
 	~D3DApp();
 	virtual bool Initlize();
 	virtual int Run();
 
-private:
+protected:
+	virtual void Update();
+	virtual void Draw();
+
+protected:
 	bool InitAppWindow();
 	bool InitDirect3D();
 	void OnResize(WPARAM wParam, LPARAM lParam, void*reserved = nullptr);
@@ -46,18 +35,12 @@ private:
 
 	void FlushCommandQueue();
 
-	void Update();
-	void Draw();
-
-	void BuildScene();
-
-private:
+protected:
 	int mShow;
 	HINSTANCE mAppInstance;
 	LPCWSTR mWndClassName;
 	LPCWSTR mWndWindowName;
 	HWND mAppWnd;
-
 
 	Microsoft::WRL::ComPtr <IDXGIFactory4> mdxgifactory;
 	Microsoft::WRL::ComPtr <ID3D12Device> md3dDevice;
@@ -86,6 +69,9 @@ private:
 
 	D3D12_VIEWPORT mViewPort;
 	D3D12_RECT mScissorRect;
+
+	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
+	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	int mAppScreenWidth;
 	int mAppScreenHeight;

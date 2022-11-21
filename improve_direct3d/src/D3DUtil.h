@@ -6,6 +6,8 @@
 #include <string.h>
 #include <string>
 #include <vector>
+#include <array>
+#include <unordered_map>
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -14,6 +16,8 @@
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
+#include <DirectXCollision.h>
+#include <d3dcompiler.h>
 #include <d3d12.h>
 #include <dxgi.h>
 #include <dxgi1_4.h>
@@ -34,10 +38,52 @@ public:
 		UINT64 byteSize,
 		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 
+	static UINT CalcConstantBufferByteSize(UINT byteSize);
+
+	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
+		const std::wstring& filename, 
+		const D3D_SHADER_MACRO* defines, 
+		const std::string& entryPoint, 
+		const std::string& target);
+
 private:
 
 };
 
+struct SubmeshGeometry 
+{
+	UINT IndexCount = 0;
+	UINT StartIndexLocation = 0;
+	INT BaseVertexLocation = 0;
+
+	DirectX::BoundingBox Bounds;
+};
+
+struct MeshGeometry
+{
+	std::string Name;
+	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU;
+	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU;
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
+
+	UINT VertexByteStride = 0;
+	UINT VertexBufferByteSize = 0;
+	DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
+	UINT IndexBufferByteSize = 0;
+
+	std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
+
+	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const;
+
+	D3D12_INDEX_BUFFER_VIEW IndexBufferView() const;
+
+	void DisposeUploaders();
+};
 
 class DxException
 {

@@ -23,8 +23,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> D3DUtil::CreateDefaultBuffer(
 		&CD3DX12_RESOURCE_DESC::Buffer(byteSize),
 		D3D12_RESOURCE_STATE_COMMON,
 		nullptr,
-		IID_PPV_ARGS(defaultBuffer.GetAddressOf())
-	));
+		IID_PPV_ARGS(defaultBuffer.GetAddressOf())));
 
 	ThrowIfFailed(device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -50,6 +49,71 @@ Microsoft::WRL::ComPtr<ID3D12Resource> D3DUtil::CreateDefaultBuffer(
 		D3D12_RESOURCE_STATE_COPY_DEST));
 	
 	return defaultBuffer;
+}
+
+Microsoft::WRL::ComPtr<ID3DBlob> D3DUtil::CompileShader(
+	const std::wstring& filename,
+	const D3D_SHADER_MACRO* defines,
+	const std::string& entryPoint,
+	const std::string& target) 
+{
+	UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	HRESULT hr = S_OK;
+	hr = E_FAIL;
+	Microsoft::WRL::ComPtr<ID3DBlob> byteCode;
+	Microsoft::WRL::ComPtr<ID3DBlob> errors;
+
+	hr = D3DCompileFromFile(filename.c_str(), defines, 
+		D3D_COMPILE_STANDARD_FILE_INCLUDE, 
+		entryPoint.c_str(),
+		target.c_str(),
+		compileFlags,
+		0, &byteCode, &errors);
+
+	if (errors != nullptr)
+	{
+		OutputDebugStringA((char*)errors->GetBufferPointer());
+	}
+
+	ThrowIfFailed(hr);
+
+	return byteCode;
+}
+
+
+UINT D3DUtil::CalcConstantBufferByteSize(UINT byteSize) 
+{
+	return (byteSize + 255) & ~255;
+}
+
+D3D12_VERTEX_BUFFER_VIEW MeshGeometry::VertexBufferView() const
+{
+	D3D12_VERTEX_BUFFER_VIEW vbv;
+	vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
+	vbv.StrideInBytes = VertexByteStride;
+	vbv.SizeInBytes = VertexBufferByteSize;
+
+	return vbv;
+}
+
+D3D12_INDEX_BUFFER_VIEW MeshGeometry::IndexBufferView() const
+{
+	D3D12_INDEX_BUFFER_VIEW ibv;
+	ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
+	ibv.Format = IndexFormat;
+	ibv.SizeInBytes = IndexBufferByteSize;
+
+	return ibv;
+}
+
+void MeshGeometry::DisposeUploaders()
+{
+	VertexBufferUploader = nullptr;
+	IndexBufferUploader = nullptr;
 }
 
 DxException::DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber) :
